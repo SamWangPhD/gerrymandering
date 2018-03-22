@@ -39,20 +39,16 @@ actual_Dseats=sum(stateDvotes(sdist)>0.5); % number of actual D seats won
 
 % simulate some delegations
 clear p dseats
-if symmet==0
-    for i=1:number_of_simulated_delegations
-        fantasydel=alldistricts([floor(rand([1 total_state_seats])*alldist)+1]); % pick a random set of districts
-        p(i)=sum(Dvotes(fantasydel))/total_state_seats; % average two-party vote share in the simulated delegation
-        dseats(i)=sum(Dvotes(fantasydel)>0.5); % the simulated delegation has this many D seats
-    end
-else
-    for i=1:number_of_simulated_delegations
-        fantasydel=alldistricts([floor(rand([1 total_state_seats])*alldist)+1]); % pick a random set of districts
-        flips=sign(rand([total_state_seats 1])-0.5);
-        p(i)=( sum(Dvotes(fantasydel).*flips) + length(find(flips==-1)) )/total_state_seats; % average two-party vote share in the simulated delegation
-        dseats(i)= sum(Dvotes(fantasydel(find(flips==1)))>0.5) + sum(Dvotes(fantasydel(find(flips==-1)))<0.5); % the simulated delegation has this many D seats
-    end
+
+fantasydelDvotes=Dvotes(randi([1, alldist], total_state_seats, number_of_simulated_delegations)); % pick a random set of districts
+
+if symmet
+    flips=rand([total_state_seats number_of_simulated_delegations])>0.5;
+    fantasydelDvotes(flips) = 1 - fantasydelDvotes(flips);
 end
+
+p=sum(fantasydelDvotes)/total_state_seats; % average two-party vote share in the simulated delegation
+dseats=sum(fantasydelDvotes>0.5); % the simulated delegation has this many D seats
 
 epsilon=0.001; % the larger this is, the closer sigma is to the expected. 0.001 means within 0.1%
 % if epsilon=0.15 and SD of parent distribution is 0.15, sigma and std_sim are nearly the same
